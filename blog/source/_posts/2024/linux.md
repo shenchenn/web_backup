@@ -1,12 +1,12 @@
 ---
-title: linux内核 
+title: linux
 categories:
   - 嵌入式
 tags:
   - linux
 ---
 
-#  linux启动
+#  linux
 
 
 
