@@ -23,7 +23,6 @@ jobs:
           npm install
           # npm run docs:build
           npm install -g hexo-cli
-          cd repo/blog
           hexo clean
           hexo generate
       - name: Install ossutil
@@ -37,6 +36,7 @@ jobs:
         run: |
           # 切换到代码目录
           cd repo
+          ls
           ossutil rm -rf oss://web-chensnable/  --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
           ossutil cp -r ./blog/public oss://web-chensnable/ --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
 
