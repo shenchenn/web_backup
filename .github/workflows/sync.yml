@@ -20,8 +20,8 @@ jobs:
         # 执行应用打包步骤
       - name: npm
         run: |
+          cd repo/blog
           npm install
-          npm run docs:build
           npm install -g hexo-cli
       - name: hexo
         run: |
