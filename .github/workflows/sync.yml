@@ -16,13 +16,14 @@ jobs:
       - name: node
         uses: actions/setup-node@v2
         with:
-          node-version: '12'
+          node-version: '20.17.0'
         # 执行应用打包步骤
       - name: Install dependencies and build
         run: |
           npm install
           # npm run docs:build
           npm install -g hexo-cli
+          cd repo/blog
           hexo clean
           hexo generate
       - name: Install ossutil
