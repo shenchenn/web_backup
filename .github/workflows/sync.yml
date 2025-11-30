@@ -16,7 +16,7 @@ jobs:
           path: repo
       - name: Restore file modification time
         run: |
-          cd repo
+          cd repo/blog
           # 取消git对中文文件的转义，否则linux会将\xxx解读为xxx找不到对应中文文件
           # git config --global core.quotepath false 
           # 从git log中读取文件修改记录，并将sources中文件的修改时间用touch -d进行修复
