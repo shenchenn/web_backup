@@ -264,7 +264,7 @@ footer:
   owner: 
     enable: true
     since: 2024
-  custom_text: <a href="https://beian.miit.gov.cn/" target="_blank">鲁ICP备2024118405号-1</a>
+  custom_text: <a href="https://beian.miit.gov.cn/" target="_blank">鲁ICP备2024118405号-2</a>
   # Copyright of theme and framework
   copyright: false
 
@@ -515,7 +515,8 @@ share:
   # AddToAny
   # https://www.addtoany.com/
   addtoany:
-    item: facebook,twitter,wechat,sina_weibo,facebook_messenger,email,copy_link
+    # item: facebook,twitter,wechat,sina_weibo,facebook_messenger,email,copy_link
+    item: wechat,email,copy_link
 
 # --------------------------------------
 # Comments System

@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: SCHEN
+title: chensNable
 subtitle: ''
 description: ''
 keywords:
-author: schen
+author: chensNable
 language: zh-CN
 timezone: ''
 
@@ -103,5 +103,6 @@ theme: butterfly #landscape
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: git@117.72.36.104:/home/git/web_repo/myweb
+  # repo: git@117.72.36.104:/home/git/web_repo/myweb
+  repo: git@github.com:shenchenn/blog
   branch: master
