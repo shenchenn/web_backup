@@ -25,15 +25,12 @@ jobs:
           npm install -g hexo-cli
       - name: hexo
         run: |
-          cd repo/blog
+          cd repo
           # 取消git对中文文件的转义，否则linux会将\xxx解读为xxx找不到对应中文文件
           git config --global core.quotepath false 
           # 从git log中读取文件修改记录，并将source中文件的修改时间用touch -d进行修复
-          cd ..
           chmod +x run.sh
           ./run.sh
-          # git ls-files --directory source | while read path; do touch -d "$(git log -1 --format='@%ct' $path)" "$path"; done
-          # git ls-files -z | while read -d '' path; do touch -d "$(git log -1 --format="@%ct" "$path")" "$path"; done
           cd blog
           hexo clean
           hexo generate
