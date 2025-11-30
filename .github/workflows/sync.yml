@@ -24,9 +24,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.17.0'
-        run: |
-          #时间矫正
-          git ls-files --directory source | while read path; do touch -d "$(git log -1 --format='@%ct' $path)" "$path"; done  
       - name: npm
         run: |
           cd repo/blog
