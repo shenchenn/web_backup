@@ -18,11 +18,13 @@ jobs:
         with:
           node-version: '20.17.0'
         # 执行应用打包步骤
-      - name: Install dependencies and build
+      - name: npm
         run: |
           npm install
           # npm run docs:build
           npm install -g hexo-cli
+      - name: hexo
+        run: |
           hexo clean
           hexo generate
       - name: Install ossutil
