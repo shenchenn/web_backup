@@ -14,16 +14,6 @@ jobs:
         with:
           fetch-depth: '0'  # checkout是将文件放入当前工作区，默认情况下对git文件做浅拷贝(shadow copy)，保留git log中的时间信息，采用深拷贝(deep copy)
           path: repo
-      # - name: Restore file modification time
-      #   run: |
-          # cd repo
-          # 取消git对中文文件的转义，否则linux会将\xxx解读为xxx找不到对应中文文件
-          # git config --global core.quotepath false 
-          # 从git log中读取文件修改记录，并将source中文件的修改时间用touch -d进行修复
-          # chmod +x ./run.sh
-          # ./run.sh
-          # git ls-files --directory ./blog/source | while read path; do touch -d "$(git log -1 --format='@%ct' $path)" "$path"; done
-          # git ls-files -z | while read -d '' path; do touch -d "$(git log -1 --format="@%ct" "$path")" "$path"; done
       - name: node
         uses: actions/setup-node@v3
         with:
@@ -36,6 +26,13 @@ jobs:
       - name: hexo
         run: |
           cd repo/blog
+          # 取消git对中文文件的转义，否则linux会将\xxx解读为xxx找不到对应中文文件
+          # git config --global core.quotepath false 
+          # 从git log中读取文件修改记录，并将source中文件的修改时间用touch -d进行修复
+          # chmod +x ./run.sh
+          # ./run.sh
+          git ls-files --directory source | while read path; do touch -d "$(git log -1 --format='@%ct' $path)" "$path"; done
+          # git ls-files -z | while read -d '' path; do touch -d "$(git log -1 --format="@%ct" "$path")" "$path"; done
           hexo clean
           hexo generate
       - name: Install ossutil
