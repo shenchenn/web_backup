@@ -38,5 +38,5 @@ jobs:
           cd repo
           ls
           ossutil rm -rf oss://web-chensnable/  --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
-          ossutil cp -r ./blog/public oss://web-chensnable/ --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
+          ossutil cp -r ./ oss://web-chensnable/ --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
 
