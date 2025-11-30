@@ -18,11 +18,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.17.0'
-      - name: npm
-        run: |
-          cd repo/blog
-          npm install
-          npm install -g hexo-cli
+      # - name: npm
+      #   run: |
+      #     cd repo/blog
+      #     npm install
+      #     npm install -g hexo-cli
       - name: hexo
         run: |
           cd repo
