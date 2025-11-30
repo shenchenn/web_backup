@@ -12,7 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
+          fetch-depth: '0'  # checkout是将文件放入当前工作区，默认情况下对git文件做浅拷贝(shadow copy)，保留git log中的时间信息，采用深拷贝(deep copy)
           path: repo
+      - name: Restore file modification time
+        run: |
+          # 取消git对中文文件的转义，否则linux会将\xxx解读为xxx找不到对应中文文件
+          git config --global core.quotepath false 
+          # 从git log中读取文件修改记录，并将sources中文件的修改时间用touch -d进行修复
+          git ls-files --directory source | while read path; do touch -d "$(git log -1 --format='@%ct' $path)" "$path"; done
       - name: node
         uses: actions/setup-node@v3
         with:
@@ -38,9 +45,10 @@ jobs:
         env:
           ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_WEB_KEY }}
           ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_WEB_SECRET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ENDPOINT }}
         run: |
           # 切换到代码目录
           cd repo
-          ossutil rm -rf oss://web-chensnable/  --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
-          ossutil cp -r ./blog/public oss://web-chensnable/ --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
+          ossutil rm -rf oss://web-chensnable/  --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=$ALIYUN_OSS_ENDPOINT
+          ossutil cp -r ./blog/public oss://web-chensnable/ --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=$ALIYUN_OSS_ENDPOINT
 
