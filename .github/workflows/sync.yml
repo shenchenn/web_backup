@@ -11,10 +11,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        uses: actions/setup-node@v2
         with:
           path: repo
-          node-version: '12'
+      - name: node
+        uses: actions/setup-node@v2
+        node-version: '12'
         # 执行应用打包步骤
       - name: Install dependencies and build
         run: |
