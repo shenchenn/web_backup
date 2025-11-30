@@ -13,11 +13,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: repo
-      # # 执行应用打包步骤
-      # - name: Install dependencies and build
-      #   run: |
-      #     npm install
-      #     npm run docs:build
+        # 执行应用打包步骤
+      - name: Install dependencies and build
+        run: |
+          npm install
+          # npm run docs:build
+          npm install -g hexo-cli
+          hexo clean
+          hexo generate
       - name: Install ossutil
         run: |
           curl -L https://gosspublic.alicdn.com/ossutil/1.7.0/ossutil64 -o /usr/local/bin/ossutil
@@ -30,5 +33,5 @@ jobs:
           # 切换到代码目录
           cd repo
           ossutil rm -rf oss://web-chensnable/  --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
-          ossutil cp -r . oss://web-chensnable/ --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
+          ossutil cp -r ./blog/public oss://web-chensnable/ --access-key-id=$ACCESS_KEY_ID --access-key-secret=$ACCESS_KEY_SECRET --endpoint=oss-cn-hangzhou.aliyuncs.com
 
