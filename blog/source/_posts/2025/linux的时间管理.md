@@ -1,7 +1,7 @@
 ---
 title: linux的时间管理
-
-date: 2025-05-30 01:10:00categories:
+date: 2025-05-30 01:10:00
+categories:
   - 嵌入式
 tags:
   - 芯片
