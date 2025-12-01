@@ -42,7 +42,7 @@ function writeFileTime(file,fs){
 			//console.log("文件的创建时间是：",getFormatDate(stats.mtime));
             var result= data.replace(RegExp,""); //替换更新时间
 			result = result.replace(/categories:/g, "date: "+getFormatDate(stats.ctime)+"\r"+"categories:");//data:替换为标准化日期
-			//console.log("修改后文件内容为：",result);
+			console.log("修改后文件内容为：",result);
 			fs.writeFile(file, result, 'utf8',function(err) { //写入新的文件内容
 				if (err) return console.log("写文件错误：",err);
 			});

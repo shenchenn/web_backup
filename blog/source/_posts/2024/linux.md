@@ -1,6 +1,6 @@
 ---
 title: linux
-date: 2025-12-02 01:08:29categories:
+date: 2024-10-24 00:36:05categories:
   - 嵌入式
 tags:
   - linux
