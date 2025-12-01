@@ -1,5 +1,6 @@
 ---
 title: ubuntu实现自定义脚本的开机自启动
+date: 2025-12-02 01:07:20categories:
 tags:
   - 小技巧
 ---
