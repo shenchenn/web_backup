@@ -1,0 +1,44 @@
+# - author: Butterfly
+#   avatar: https://butterfly.js.org/img/avatar.png
+#   date: 2024-06-21 23:33:26
+#   key: key-1
+#   content: |
+#     This is a sample content for **Author 1**.
+#     ![Sample Image](https://via.placeholder.com/150)
+#   tags:
+#     - tags1
+#     - tags2
+# - author: Butterfly
+#   avatar: https://butterfly.js.org/img/avatar.png
+#   date: 2024-06-20 23:33:26
+#   key: key-2
+#   content: |
+#     This is a sample content for **Author 2**.
+#     ![Sample Image](https://via.placeholder.com/150)
+#   tags:
+#     - tag2
+#     - tag3
+
+# - author: Butterfly
+#   avatar: https://butterfly.js.org/img/avatar.png
+#   date: 2024-06-19 23:33:26
+#   key: key-3
+#   content: |
+#     This is a sample content for **Author 3**.
+- date: 2026-02-19 15:23:00
+  key: key-1
+  content: |
+    图片分享。
+    <img src="/web_image/shuoshuo/2026/2/a.jpg" style="zoom: 50%;" />
+    
+
+# uthor 和 avatar可省略，會自動去獲取配置文件中的 author 和 avatar
+- date: 2026-02-19 14:53:00
+  key: key-1
+  content: |
+    第二条个人分享测试。
+
+- date: 2024-06-19 23:33:26
+  key: key-1
+  content: |
+    第一条个人分享测试。
