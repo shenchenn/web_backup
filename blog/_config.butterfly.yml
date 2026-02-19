@@ -235,7 +235,7 @@ post_edit:
 related_post:
   enable: true
   # Number of posts displayed
-  limit: 6
+  limit: 2
   # Choose: created / updated
   date_type: created
 
