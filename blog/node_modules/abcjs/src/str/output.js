@@ -1,5 +1,5 @@
 var keyAccidentals = require("../const/key-accidentals");
-var { relativeMajor, transposeKey, relativeMode } = require("../const/relative-major");
+var { relativeMajor, transposeKey, relativeMode, isLegalMode } = require("../const/relative-major");
 var transposeChordName = require("../parse/transpose-chord")
 
 var strTranspose;
@@ -58,12 +58,13 @@ var strTranspose;
 		var count = arr[0].length
 		for (var i = 1; i < arr.length; i++) {
 			var segment = arr[i]
-			var match = segment.match(/^( *)([A-G])([#b]?)(\w*)/)
+			var match = segment.match(/^( *)([A-G])([#b]?)( ?)(\w*)/)
 			if (match) {
 				var start = count + 2 + match[1].length // move past the 'K:' and optional white space
-				var key = match[2] + match[3] + match[4] // key name, accidental, and mode
-				var destinationKey = newKey({ root: match[2], acc: match[3], mode: match[4] }, steps)
-				var dest = destinationKey.root + destinationKey.acc + destinationKey.mode
+				var mode = isLegalMode(match[5]) ? match[5]: ''
+				var key = match[2] + match[3] + match[4] + mode // key name, accidental, optional space, and mode
+				var destinationKey = newKey({ root: match[2], acc: match[3], mode: mode }, steps)
+				var dest = destinationKey.root + destinationKey.acc + match[4] + destinationKey.mode
 				changes.push({ start: start, end: start + key.length, note: dest })
 			}
 			count += segment.length + 2
@@ -136,14 +137,16 @@ var strTranspose;
 				}
 			}
 			if (el.el_type === 'note' && el.pitches) {
-				for (var j = 0; j < el.pitches.length; j++) {
-					var note = parseNote(el.pitches[j].name, keyRoot, keyAccidentals, measureAccidentals)
+				var pitchArray = findNotes(abc,el.startChar, el.endChar)
+				//console.log(pitchArray)
+				for (var j = 0; j < pitchArray.length; j++) {
+					var note = parseNote(pitchArray[j].note, keyRoot, keyAccidentals, measureAccidentals)
 					if (note.acc)
 						measureAccidentals[note.name.toUpperCase()] = note.acc
 					var newPitch = transposePitch(note, destinationKey, letterDistance, transposedMeasureAccidentals)
 					if (newPitch.acc)
 						transposedMeasureAccidentals[newPitch.upper] = newPitch.acc
-					changes.push(replaceNote(abc, el.startChar, el.endChar, newPitch.acc + newPitch.name, j))
+					changes.push({note:newPitch.acc+newPitch.name, start: pitchArray[j].index, end: pitchArray[j].index+pitchArray[j].note.length})
 				}
 				if (el.gracenotes) {
 					for (var g = 0; g < el.gracenotes.length; g++) {
@@ -216,6 +219,7 @@ var strTranspose;
 				break;
 			}
 		}
+		var newNote
 		switch (adj) {
 			case -2: acc = "__"; break;
 			case -1: acc = "_"; break;
@@ -224,7 +228,7 @@ var strTranspose;
 			case 2: acc = "^^"; break;
 			case -3:
 				// This requires a triple flat, so bump down the pitch and try again
-				var newNote = {}
+				newNote = {}
 				newNote.pitch = note.pitch - 1
 				newNote.oct = note.oct
 				newNote.name = letters[letters.indexOf(note.name) - 1]
@@ -239,7 +243,7 @@ var strTranspose;
 				return transposePitch(newNote, key, letterDistance + 1, measureAccidentals)
 			case 3:
 				// This requires a triple sharp, so bump up the pitch and try again
-				var newNote = {}
+				newNote = {}
 				newNote.pitch = note.pitch + 1
 				newNote.oct = note.oct
 				newNote.name = letters[letters.indexOf(note.name) + 1]
@@ -276,7 +280,8 @@ var strTranspose;
 	var regPitch = /([_^=]*)([A-Ga-g])([,']*)/
 	var regNote = /([_^=]*[A-Ga-g][,']*)(\d*\/*\d*)([\>\<\-\)\.\s\\]*)/
 	var regOptionalNote = /([_^=]*[A-Ga-g][,']*)?(\d*\/*\d*)?([\>\<\-\)]*)?/
-	var regSpace = /(\s*)$/
+	//var regSpace = /(\s*)$/
+	//var regOptionalSpace = /(\s*)/
 
 	// This the relationship of the note to the tonic and an octave. So what is returned is a distance in steps from the tonic and the amount of adjustment from
 	// a normal scale. That is - in the key of D an F# is two steps from the tonic and no adjustment. A G# is three steps from the tonic and one half-step higher.
@@ -297,50 +302,94 @@ var strTranspose;
 		return { acc: reg[1], name: name, pitch: pos, oct: oct, adj: calcAdjustment(reg[1], keyAccidentals[name], measureAccidentals[name]), courtesy: reg[1] === currentAcc }
 	}
 
-	function replaceNote(abc, start, end, newPitch, index) {
-		// There may be more than just the note between the start and end - there could be spaces, there could be a chord symbol, there could be a decoration.
-		// This could also be a part of a chord. If so, then the particular note needs to be teased out.
-		var note = abc.substring(start, end)
-		var match = note.match(new RegExp(regNote.source + regSpace.source), '')
-		if (match) {
-			// This will match a single note
-			var noteLen = match[1].length
-			var trailingLen = match[2].length + match[3].length + match[4].length
-			var leadingLen = end - start - noteLen - trailingLen
-			start += leadingLen
-			end -= trailingLen
-		} else {
-			// I don't know how to capture more than one note, so I'm separating them. There is a limit of the number of notes in a chord depending on the repeats I have here, but it is unlikely to happen in real music.
-			var regPreBracket = /([^\[]*)/
-			var regOpenBracket = /\[/
-			var regCloseBracket = /\-?](\d*\/*\d*)?([\>\<\-\)]*)/
-			match = note.match(new RegExp(regPreBracket.source + regOpenBracket.source + regOptionalNote.source +
-				regOptionalNote.source + regOptionalNote.source + regOptionalNote.source +
-				regOptionalNote.source + regOptionalNote.source + regOptionalNote.source +
-				regOptionalNote.source + regCloseBracket.source + regSpace.source))
+	function findNotes(abc, start, end) {
+		// TODO-PER: I thought this regex should have found all the notes and ignored the chords and decorations but it didn't: /(?:"[^"]+")*(?:![^!]+!)*([_^=]*)([A-Ga-g])([,']*)/g
+		var note = abc.substring(start, end);
 
-			if (match) {
-				// This will match a chord
-				// Get the number of chars used by the previous notes in this chord
-				var count = 1 + match[1].length // one character for the open bracket
-				for (var i = 0; i < index; i++) { // index is the iteration through the chord. This function gets called for each one.
-					if (match[i * 3 + 2])
-						count += match[i * 3 + 2].length
-					if (match[i * 3 + 3])
-						count += match[i * 3 + 3].length
-					if (match[i * 3 + 4])
-						count += match[i * 3 + 4].length
-				}
-				start += count
-				var endLen = match[index * 3 + 2] ? match[index * 3 + 2].length : 0
-				// endLen += match[index * 3 + 3] ? match[index * 3 + 3].length : 0
-				// endLen += match[index * 3 + 4] ? match[index * 3 + 4].length : 0
-
-				end = start + endLen
-			}
+		// Since the regex will also find "c", "d", and "a" in `!coda!`, we need to filter them
+		var array
+		var ignoreBlocks = []
+		var regChord = /("[^"]+")+/g
+		while ((array = regChord.exec(note)) !== null) {
+			ignoreBlocks.push({start: regChord.lastIndex-array[0].length, end: regChord.lastIndex})
 		}
-		return { start: start, end: end, note: newPitch }
+		var regDec = /(![^!]+!)+/g
+		while ((array = regDec.exec(note)) !== null) {
+			ignoreBlocks.push({start: regDec.lastIndex-array[0].length, end: regDec.lastIndex})
+		}
+
+		var ret = []
+		// Define the regex each time because it is stateful
+		var regPitch = /([_^=]*)([A-Ga-g])([,']*)/g
+		while ((array = regPitch.exec(note)) !== null) {
+			var found = false
+			for (var i = 0; i < ignoreBlocks.length; i++) {
+				if (regPitch.lastIndex >= ignoreBlocks[i].start && regPitch.lastIndex <= ignoreBlocks[i].end)
+					found = true
+			}
+			if (!found)
+				ret.push({note: array[0], index: start + regPitch.lastIndex-array[0].length})
+		}
+
+		return ret
 	}
+
+	// function replaceNote(abc, start, end, newPitch, oldPitch, index) {
+	// 	var note = abc.substring(start, end);
+	// 	// Try single note first
+	// 	var match = note.match(new RegExp(regNote.source + regSpace.source));
+	// 	if (match) {
+	// 		var noteLen = match[1].length;
+	// 		var trailingLen = match[2].length + match[3].length + match[4].length;
+	// 		var leadingLen = end - start - noteLen - trailingLen;
+	// 		start += leadingLen;
+	// 		end -= trailingLen;
+	// 	} else {
+	// 		// Match chord
+	// 		var regPreBracket = /([^\[]*)/;
+	// 		var regOpenBracket = /\[/;
+	// 		var regCloseBracket = /\-?](\d*\/*\d*)?([\>\<\-\)]*)/;
+	// 		var regChord = new RegExp(
+	// 			regPreBracket.source +
+	// 			regOpenBracket.source +
+	// 			"(?:" + regOptionalNote.source + "\\s*){1,8}" +
+	// 			regCloseBracket.source +
+	// 			regSpace.source
+	// 		);
+	// 		match = note.match(regChord);
+	// 		if (match) {
+	// 			var beforeChordLen = match[1].length + 1; // text before + '['
+	// 			var chordBody = note.slice(match[1].length + 1, note.lastIndexOf("]"));
+	// 			// Collect notes inside chord
+	// 			var chordNotes = [];
+	// 			var regNoteWithSpace = new RegExp(regOptionalNote.source + "\\s*", "g");
+	// 			for (const m of chordBody.matchAll(regNoteWithSpace)) {
+	// 				let noteText = m[0].trim();
+	// 				if (noteText !== "") {
+	// 					chordNotes.push({ text: noteText, index: m.index });
+	// 				}
+	// 			}
+	// 			if (index >= chordNotes.length) {
+	// 				throw new Error("Chord index out of range for chord: " + note);
+	// 			}
+	// 			var chosen = chordNotes[index];
+	// 			// Preserve duration and tie
+	// 			let mDurTie = chosen.text.match(/^(.+?)(\d+\/?\d*)?(-)?$/);
+	// 			let pitchPart = mDurTie ? mDurTie[1] : chosen.text;
+	// 			let durationPart = mDurTie && mDurTie[2] ? mDurTie[2] : "";
+	// 			let tiePart = mDurTie && mDurTie[3] ? mDurTie[3] : "";
+	// 			// Replace note keeping duration and tie
+	// 			newPitch = newPitch + durationPart + tiePart;
+	// 			start += beforeChordLen + chosen.index;
+	// 			end = start + chosen.text.length;
+	// 		}
+	// 	}
+	// 	return {
+	// 		start: start,
+	// 		end: end,
+	// 		note: newPitch
+	// 	};
+	// }
 
 	function replaceGrace(abc, start, end, newGrace, index) {
 		var note = abc.substring(start, end)

@@ -175,6 +175,7 @@ var stackedDecoration = function (decoration, width, abselem, yPos, positioning,
 		"mediumphrase": "scripts.mediumphrase",
 		"longphrase": "scripts.longphrase",
 		"trill": "scripts.trill",
+		"trillh": "scripts.trill",
 		"roll": "scripts.roll",
 		"irishroll": "scripts.roll",
 		"marcato": "scripts.umarcato",
@@ -237,6 +238,7 @@ var stackedDecoration = function (decoration, width, abselem, yPos, positioning,
 			case "mediumphrase":
 			case "longphrase":
 			case "trill":
+			case "trillh":
 			case "roll":
 			case "irishroll":
 			case "marcato":
@@ -297,6 +299,17 @@ function leftDecoration(decoration, abselem, roomtaken) {
 	}
 }
 
+Decoration.prototype.endLine = function (voice) {
+	if (this.startDiminuendoX) {
+		voice.addOther(new CrescendoElem(this.startDiminuendoX, lastNote(voice.children), ">", this.dynamicPositioning));
+		this.startDiminuendoX = undefined
+	}
+	if (this.startCrescendoX) {
+		voice.addOther(new CrescendoElem(this.startCrescendoX, lastNote(voice.children), "<", this.dynamicPositioning));
+		this.startCrescendoX = undefined
+	}
+}
+
 Decoration.prototype.dynamicDecoration = function (voice, decoration, abselem, positioning) {
 	var diminuendo;
 	var crescendo;
@@ -305,17 +318,23 @@ Decoration.prototype.dynamicDecoration = function (voice, decoration, abselem, p
 		switch (decoration[i]) {
 			case "diminuendo(":
 				this.startDiminuendoX = abselem;
+				this.dynamicPositioning = positioning
 				diminuendo = undefined;
 				break;
 			case "diminuendo)":
+				if (!this.startDiminuendoX)
+					this.startDiminuendoX = firstNote(voice.children)
 				diminuendo = { start: this.startDiminuendoX, stop: abselem };
 				this.startDiminuendoX = undefined;
 				break;
 			case "crescendo(":
 				this.startCrescendoX = abselem;
+				this.dynamicPositioning = positioning
 				crescendo = undefined;
 				break;
 			case "crescendo)":
+				if (!this.startCrescendoX)
+					this.startCrescendoX = firstNote(voice.children)
 				crescendo = { start: this.startCrescendoX, stop: abselem };
 				this.startCrescendoX = undefined;
 				break;
@@ -341,6 +360,19 @@ Decoration.prototype.dynamicDecoration = function (voice, decoration, abselem, p
 		voice.addOther(new GlissandoElem(glissando.start, glissando.stop));
 	}
 };
+
+function firstNote(els) {
+	for (var i = 0; i < els.length; i++) {
+		if (els[i].abcelem.pitches)
+			return els[i]
+	}
+	return null
+}
+
+function lastNote(els) {
+	// The end point doesn't need to be a note - we end at the end of the line
+	return els[els.length-1]
+}
 
 Decoration.prototype.createDecoration = function (voice, decoration, pitch, width, abselem, roomtaken, dir, minPitch, positioning, hasVocals, accentAbove) {
 	if (!positioning)

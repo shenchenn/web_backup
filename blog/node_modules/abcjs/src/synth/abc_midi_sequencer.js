@@ -2,12 +2,13 @@
 
 var sequence;
 var parseCommon = require("../parse/abc_common");
+var Repeats = require("./repeats");
 
 (function() {
 	"use strict";
 
 	var measureLength = 1; // This should be set by the meter, but just in case that is missing, we'll take a guess.
-	// The abc is provided to us line by line. It might have repeats in it. We want to re arrange the elements to
+	// The abc is provided to us line by line. It might have repeats in it. We want to rearrange the elements to
 	// be an array of voices with all the repeats embedded, and no lines. Then it is trivial to go through the events
 	// one at a time and turn it into midi.
 
@@ -135,14 +136,14 @@ var parseCommon = require("../parse/abc_common");
 
 		// visit each voice completely in turn
 		var voices = [];
+		var clefTransposeActive = []
 		var inCrescendo = [];
 		var inDiminuendo = [];
 		var durationCounter = [0];
 		var tempoChanges = {};
 		tempoChanges["0"] = { el_type: 'tempo', qpm: qpm, timing: 0 };
 		var currentVolume;
-		var startRepeatPlaceholder = []; // There is a place holder for each voice.
-		var skipEndingPlaceholder = []; // This is the place where the first ending starts.
+		var repeats = []
 		var startingDrumSet = false;
 		var lines = abctune.lines; //abctune.deline(); TODO-PER: can switch to this, then simplify the loops below.
 		for (var i = 0; i < lines.length; i++) {
@@ -165,6 +166,7 @@ var parseCommon = require("../parse/abc_common");
 							var voiceName = getTrackTitle(line.staff, voiceNumber);
 							if (voiceName)
 								voices[voiceNumber].unshift({el_type: "name", trackName: voiceName});
+							repeats[voiceNumber] = new Repeats(voices[voiceNumber])
 						}
 						// Negate any transposition for the percussion staff.
 						if (transpose && staff.clef.type === "perc")
@@ -188,12 +190,24 @@ var parseCommon = require("../parse/abc_common");
 						if (staff.clef && staff.clef.type !== "perc" && staff.clef.transpose) {
 							staff.clef.el_type = 'clef';
 							voices[voiceNumber].push({ el_type: 'transpose', transpose: staff.clef.transpose });
+							clefTransposeActive[voiceNumber] = false
 						}
 						if (staff.clef && staff.clef.type) {
-							if (staff.clef.type.indexOf("-8") >= 0)
-								voices[voiceNumber].push({ el_type: 'transpose', transpose: -12 });
-							else if (staff.clef.type.indexOf("+8") >= 0)
-								voices[voiceNumber].push({ el_type: 'transpose', transpose: 12 });
+							if (staff.clef.type.indexOf("-8") >= 0) {
+								voices[voiceNumber].push({el_type: 'transpose', transpose: -12});
+								clefTransposeActive[voiceNumber] = true
+							}
+							else if (staff.clef.type.indexOf("+8") >= 0) {
+								voices[voiceNumber].push({el_type: 'transpose', transpose: 12});
+								clefTransposeActive[voiceNumber] = true
+							}
+							else {
+								// if we had a previous treble+8 and now have a regular clef, then cancel the transposition
+								if (clefTransposeActive[voiceNumber]) {
+									voices[voiceNumber].push({ el_type: 'transpose', transpose: 0 });
+									clefTransposeActive[voiceNumber] = false
+								}
+							}
 						}
 
 						if (abctune.formatting.midi && abctune.formatting.midi.drumoff) {
@@ -303,31 +317,7 @@ var parseCommon = require("../parse/abc_common");
 										voices[voiceNumber].push({ el_type: 'bar' }); // We need the bar marking to reset the accidentals.
 									setDynamics(elem);
 									noteEventsInBar = 0;
-									// figure out repeats and endings --
-									// The important part is where there is a start repeat, and end repeat, or a first ending.
-									var endRepeat = (elem.type === "bar_right_repeat" || elem.type === "bar_dbl_repeat");
-									var startEnding = (elem.startEnding === '1');
-									var startRepeat = (elem.type === "bar_left_repeat" || elem.type === "bar_dbl_repeat" || elem.type === "bar_right_repeat");
-									if (endRepeat) {
-										var s = startRepeatPlaceholder[voiceNumber];
-										if (!s) s = 0; // If there wasn't a left repeat, then we repeat from the beginning.
-										var e = skipEndingPlaceholder[voiceNumber];
-										if (!e) e = voices[voiceNumber].length; // If there wasn't a first ending marker, then we copy everything.
-										// duplicate each of the elements - this has to be a deep copy.
-										for (var z = s; z < e; z++) {
-											var item = Object.assign({},voices[voiceNumber][z]);
-											if (item.pitches)
-												item.pitches = parseCommon.cloneArray(item.pitches);
-											voices[voiceNumber].push(item);
-										}
-										// reset these in case there is a second repeat later on.
-										skipEndingPlaceholder[voiceNumber] = undefined;
-										startRepeatPlaceholder[voiceNumber] = undefined;
-									}
-									if (startEnding)
-										skipEndingPlaceholder[voiceNumber] = voices[voiceNumber].length;
-									if (startRepeat)
-										startRepeatPlaceholder[voiceNumber] = voices[voiceNumber].length;
+									repeats[voiceNumber].addBar(elem, voiceNumber)
 									rhythmHeadThisBar = false;
 									break;
 								case 'style':
@@ -429,7 +419,7 @@ var parseCommon = require("../parse/abc_common");
 				}
 
 				function setDynamics(elem) {
-					var volumes = {
+					var volumes = {//stressBeat1, stressBeatDown, stressBeatUp
 						'pppp': [15, 10, 5, 1],
 						'ppp': [30, 20, 10, 1],
 						'pp': [45, 35, 20, 1],
@@ -467,7 +457,15 @@ var parseCommon = require("../parse/abc_common");
 
 						if (dynamicType) {
 							currentVolume = volumes[dynamicType].slice(0);
-							voices[voiceNumber].push({ el_type: 'beat', beats: currentVolume.slice(0) });
+							let volumesPerNotePitch = [currentVolume];
+							if(Array.isArray(elem.decoration)){
+								volumesPerNotePitch = [];
+								elem.decoration.forEach(d=>{
+									if (d in volumes)
+										volumesPerNotePitch.push(volumes[d].slice(0));
+								});
+							}
+							voices[voiceNumber].push({ el_type: 'beat', beats: currentVolume.slice(0), volumesPerNotePitch: volumesPerNotePitch, });
 							inCrescendo[k] = false;
 							inDiminuendo[k] = false;
 						}
@@ -503,6 +501,9 @@ var parseCommon = require("../parse/abc_common");
 				}
 			}
 		}
+		for (var r = 0; r < repeats.length; r++)
+			voices[r] = repeats[r].resolveRepeats()
+
 		// If there are tempo changes, make sure they are in all the voices. This must be done post process because all the elements in all the voices need to be created first.
 		insertTempoChanges(voices, tempoChanges);
 
@@ -626,19 +627,29 @@ var parseCommon = require("../parse/abc_common");
 		switch (element.type) {
 			case "common_time":
 				meter = { el_type: 'meter', num: 4, den: 4 };
+				measureLength = 4/4
 				break;
 			case "cut_time":
 				meter = { el_type: 'meter', num: 2, den: 2 };
+				measureLength = 2/2
 				break;
 			case "specified":
 				// TODO-PER: only taking the first meter, so the complex meters are not handled.
-				meter = { el_type: 'meter', num: element.value[0].num, den: element.value[0].den };
+				let num = 0
+				if (element.value && element.value.length > 0 && element.value[0].num.indexOf('+') > 0) {
+					var parts = element.value[0].num.split('+')
+					for (var i = 0; i < parts.length; i++)
+						num += parseInt(parts[i],10)
+				} else
+					num = parseInt(element.value[0].num, 10);
+				meter = { el_type: 'meter', num: num, den: element.value[0].den };
+				measureLength = num / parseInt(element.value[0].den,10)
 				break;
 			default:
 				// This should never happen.
 				meter = { el_type: 'meter' };
+				measureLength = 1
 		}
-		measureLength = meter.num/meter.den;
 		return meter;
 	}
 

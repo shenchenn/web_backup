@@ -1,9 +1,7 @@
-[![Code Climate](https://codeclimate.com/github/mattboldt/typed.js/badges/gpa.svg)](https://codeclimate.com/github/mattboldt/typed.js)
-[![GitHub release](https://img.shields.io/github/release/mattboldt/typed.js.svg)]()
 [![npm](https://img.shields.io/npm/dt/typed.js.svg)](https://img.shields.io/npm/dt/typed.js.svg)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mattboldt/typed.js/master/LICENSE.txt)
+[![GitHub license](https://img.shields.io/badge/license-GPL3-blue.svg)](https://raw.githubusercontent.com/mattboldt/typed.js/main/LICENSE.txt)
 
-<img src="https://raw.githubusercontent.com/mattboldt/typed.js/master/logo-cropped.png" width="450px" title="Typed.js" />
+<img src="https://raw.githubusercontent.com/mattboldt/typed.js/main/logo-cropped.png" width="450px" title="Typed.js" />
 
 ### [Live Demo](http://www.mattboldt.com/demos/typed-js/) | [View All Demos](http://mattboldt.github.io/typed.js/) | [View Full Docs](http://mattboldt.github.io/typed.js/docs) | [mattboldt.com](http://www.mattboldt.com)
 
@@ -11,34 +9,33 @@ Typed.js is a library that types. Enter in any string, and watch it type at the 
 
 ---
 
+## Licensing
+
+<table align="center">
+  <tr>
+    <th><a href="LICENSE.txt">GPL-3.0 License</a></th>
+    <th><a href="https://buy.stripe.com/9B6aEW9hvg4Zg2Hh0FgA800">Limited Commercial License</a></th>
+    <th><a href="https://buy.stripe.com/cNi4gy51fg4ZbMr25LgA801">Unlimited Commercial License</a></th>
+  </tr>
+  <tr>
+    <td>
+      <p>For use on personal and open source projects</p>
+      <p><a href="LICENSE.txt">View License</a></p>
+    </td>
+    <td>
+      <p>For use on a single commercial project</p>
+      <p><a href="https://buy.stripe.com/9B6aEW9hvg4Zg2Hh0FgA800">Purchase License</a></p>
+      <p><a href="LIMITED_COMMERCIAL_LICENSE.md">View License</a></p>
+    </td>
+    <td>
+      <p>For use on unlimited commercial projects</p>
+      <p><a href="https://buy.stripe.com/cNi4gy51fg4ZbMr25LgA801">Purchase License</a></p>
+      <p><a href="UNLIMITED_COMMERCIAL_LICENSE.md">View License</a></p>
+    </td>
+  </tr>
+</table>
+
 ## Installation
-
-### CDN
-
-```html
-<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-```
-
-For use directly in the browser via `<script>` tag:
-
-```html
-  <!-- Element to contain animated typing -->
-  <span id="element"></span>
-
-  <!-- Load library from the CDN -->
-  <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-
-  <!-- Setup and start animation! -->
-  <script>
-    var typed = new Typed('#element', {
-      strings: ['<i>First</i> sentence.', '&amp; a second sentence.'],
-      typeSpeed: 50,
-    });
-  </script>
-</body>
-```
-
-### As an ESModule
 
 For use with a build tool like [Vite](https://vitejs.dev/), and/or in a React application, install with NPM or Yarn.
 
@@ -68,14 +65,14 @@ const typed = new Typed('#element', {
 ### ReactJS Usage
 
 ```js
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Typed from 'typed.js';
 
 function MyComponent() {
   // Create reference to store the DOM element containing the animation
-  const el = React.useRef(null);
+  const el = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const typed = new Typed(el.current, {
       strings: ['<i>First</i> sentence.', '&amp; a second sentence.'],
       typeSpeed: 50,
@@ -95,6 +92,31 @@ function MyComponent() {
 }
 ```
 
+### CDN
+
+```html
+<script src="https://unpkg.com/typed.js@3.0.0/dist/typed.umd.js"></script>
+```
+
+For use directly in the browser via `<script>` tag:
+
+```html
+  <!-- Element to contain animated typing -->
+  <span id="element"></span>
+
+  <!-- Load library from the CDN -->
+  <script src="https://unpkg.com/typed.js@3.0.0/dist/typed.umd.js"></script>
+
+  <!-- Setup and start animation! -->
+  <script>
+    var typed = new Typed('#element', {
+      strings: ['<i>First</i> sentence.', '&amp; a second sentence.'],
+      typeSpeed: 50,
+    });
+  </script>
+</body>
+```
+
 More complex hook-based function component: https://jsfiddle.net/mattboldt/60h9an7y/
 
 Class component: https://jsfiddle.net/mattboldt/ovat9jmp/
@@ -109,31 +131,35 @@ Check out the WebComponent: https://github.com/Orlandster/wc-typed-js
 
 ## Wonderful sites that have used (or are using) Typed.js
 
+https://forwardemail.net
+
+https://codesignal.com
+
 https://github.com/features/package-registry
 
-https://slack.com/
+https://slack.com
 
-https://envato.com/
+https://envato.com
 
-https://gorails.com/
+https://gorails.com
 
-https://productmap.co/
+https://productmap.co
 
-https://www.typed.com/
+https://www.typed.com
 
 https://apeiron.io
 
-https://git.market/
+https://git.market
 
-https://commando.io/
+https://commando.io
 
 http://testdouble.com/agency.html
 
-https://www.capitalfactory.com/
+https://www.capitalfactory.com
 
-http://www.maxcdn.com/
+http://www.maxcdn.com
 
-https://www.powerauth.com/
+https://www.powerauth.com
 
 ---
 

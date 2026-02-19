@@ -4,11 +4,17 @@
 
 This library makes it easy to incorporate **sheet music** into your **websites**. You can also turn visible **ABC** text into sheet music on websites that you don't own using a greasemonkey script, or change your own website that contains ABC text with no other changes than the addition of one javascript file. You can also generate **MIDI files** or play them directly in your browser.
 
-[List of Examples](https://cdn.rawgit.com/paulrosen/abcjs/main/examples/toc.html)
+[List of Examples](https://examples.abcjs.net/)
 
-Full documentation is here: [abcjs documentation](https://paulrosen.github.io/abcjs/)
+Full documentation is here: [abcjs documentation](https://docs.abcjs.net/)
 
 There is an organization that has a collection of useful projects related to abcjs called [abcjs-music](https://github.com/abcjs-music). See some examples there. If you have a project that you think would be of general interest and would like to add it to that organization, contact me.
+
+## Announcement: version 6.6.0
+
+This has the new feature `chordGrid`, which is a view of the chords similar to some of the trad jazz lead sheets. If you have `chordGrid: "noMusic"` then only the chords will show, if you have `chordGrid: "withMusic"` then the chords will print above the standard music.
+
+There is also completely new handling for the repeated sections that can handle more complicated repeating patterns. This should make more charts play correctly but it might cause an issue if you are counting on the old behavior.
 
 ## Announcement: version 6.4.0
 

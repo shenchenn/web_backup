@@ -61,7 +61,7 @@ declare module 'abcjs' {
 
 	export type NoteHeadType = 'normal' | 'harmonic' | 'rhythm' | 'x' | 'triangle';
 
-	export type Decorations = "trill" | "lowermordent" | "uppermordent" | "mordent" | "pralltriller" | "accent" |
+	export type Decorations = "trill" | "trillh" | "lowermordent" | "uppermordent" | "mordent" | "pralltriller" | "accent" |
 		"fermata" | "invertedfermata" | "tenuto" | "0" | "1" | "2" | "3" | "4" | "5" | "+" | "wedge" |
 		"open" | "thumb" | "snap" | "turn" | "roll" | "irishroll" | "breath" | "shortphrase" | "mediumphrase" | "longphrase" |
 		"segno" | "coda" | "D.S." | "D.C." | "fine" | "crescendo(" | "crescendo)" | "diminuendo(" | "diminuendo)" |"glissando(" | "glissando)" |
@@ -76,7 +76,7 @@ declare module 'abcjs' {
 	//
 	// Basic types
 	//
-	export type Selector = string | HTMLElement
+	export type Selector = string | Element
 
 	type NumberFunction = () => number;
 
@@ -266,6 +266,7 @@ declare module 'abcjs' {
 		add_classes?: boolean;
 		afterParsing?: AfterParsing;
 		ariaLabel?: string;
+		chordGrid?:'noMusic'|'withMusic';
 		clickListener?: ClickListener;
 		dragColor?: string;
 		dragging?: boolean;
@@ -321,7 +322,7 @@ declare module 'abcjs' {
 		synthControl?: SynthObjectController;
 		el: Selector;
 		cursorControl?: CursorControl;
-		options?: SynthOptions;
+		options?: SynthOptions & SynthVisualOptions;
 	}
 
 	export interface EditorOptions {
@@ -331,6 +332,7 @@ declare module 'abcjs' {
 		warnings_id?: Selector;
 		onchange?: OnChange;
 		selectionChangeCallback?: SelectionChangeCallback;
+		redrawCallback?: RedrawCallback;
 		abcjsParams?: AbcVisualParams;
 		indicate_changed?: boolean;
 		synth?: EditorSynth;
@@ -871,6 +873,29 @@ declare module 'abcjs' {
 		}
 	}
 
+	interface ChordGridSubtitle {
+		type: "subtitle";
+		subtitle: string;
+	}
+	interface ChordGridText {
+		type: "text";
+		text: string;
+	}
+	interface ChordGridMeasure {
+		chord: [string,string,string,string];
+		hasStartRepeat?:boolean;
+		hasEndRepeat?:boolean;
+		noBorder?:boolean; // for when the line isn't complete, this is a placeholder
+		ending?:number; // This bar starts an ending
+		annotations?: Array<string>;
+	}
+	interface ChordGridPart {
+		type: "part";
+		name: string;
+		lines: Array<ChordGridMeasure>;
+	}
+	type ChordGrid = ChordGridSubtitle | ChordGridText | ChordGridPart;
+
 	export interface TuneObject {
 		formatting: Formatting;
 		engraver?: EngraverController;
@@ -880,6 +905,7 @@ declare module 'abcjs' {
 		metaTextInfo: MetaTextInfo;
 		version: string;
 		warnings?: Array<string>;
+		chordGrid?: Array<ChordGrid>;
 
 		getTotalTime: NumberFunction;
 		getTotalBeats: NumberFunction;
@@ -1144,6 +1170,8 @@ declare module 'abcjs' {
 
 	export type SelectionChangeCallback = (startChar: number, endChar: number) => void;
 
+	export type RedrawCallback = (isBefore: boolean) => void;
+
 	// Audio
 	export interface CursorControl {
 		beatSubDivision?: number
@@ -1185,8 +1213,12 @@ declare module 'abcjs' {
 	//
 	// Editor
 	//
+	export class EditArea {
+		constructor(target: Selector);
+	}
+
 	export class Editor {
-		constructor(target: Selector, options: EditorOptions);
+		constructor(target: Selector | EditArea, options: EditorOptions);
 		paramChanged(options: AbcVisualParams): void;
 		synthParamChanged(options: SynthOptions): void;
 		setNotDirty(): void;
@@ -1195,6 +1227,7 @@ declare module 'abcjs' {
 		millisecondsPerMeasure(): number;
 		pauseMidi(shouldPause: boolean): void;
 		fireChanged():void;
+		getTunes():TuneObjectArray;
 	}
 
 	//
