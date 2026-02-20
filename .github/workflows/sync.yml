@@ -22,8 +22,8 @@ jobs:
         run: |
           cd repo/blog
           npm install
-          # npm install -g hexo-cli
           # npm update
+          npm install -g hexo-cli
       - name: hexo
         run: |
           cd repo
