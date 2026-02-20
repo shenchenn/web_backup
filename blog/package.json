@@ -29,6 +29,7 @@
     "hexo-server": "^3.0.0",
     "hexo-theme-butterfly": "^5.5.4",
     "hexo-theme-landscape": "^1.1.0",
-    "npm": "^11.10.0"
+    "npm": "^11.10.0",
+    "sharp": "^0.34.5"
   }
 }
