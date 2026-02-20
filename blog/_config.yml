@@ -106,3 +106,5 @@ deploy:
   # repo: git@117.72.36.104:/home/git/web_repo/myweb
   repo: git@github.com:shenchenn/blog
   branch: master
+
+#add
