@@ -35,6 +35,7 @@ jobs:
           cd blog
           hexo clean
           hexo generate
+          npx gulp
       - name: Install ossutil
         run: |
           curl -L https://gosspublic.alicdn.com/ossutil/1.7.0/ossutil64 -o /usr/local/bin/ossutil
