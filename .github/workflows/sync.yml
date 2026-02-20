@@ -22,6 +22,7 @@ jobs:
         run: |
           cd repo/blog
           npm install
+          npm rebuild --verbose sharp
           npm install -g hexo-cli
           npm update
       - name: hexo
@@ -35,6 +36,7 @@ jobs:
           cd blog
           hexo clean
           hexo generate
+          
           npx gulp
       - name: Install ossutil
         run: |
